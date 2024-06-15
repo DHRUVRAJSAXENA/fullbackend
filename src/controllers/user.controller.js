@@ -11,11 +11,11 @@ import { ApiResponse } from "../utils/ApiResponse.js";
 const registerUser = asynHandler(async (req, res) => {
   // get user details from frontend
   const { fullName, email, username, password } = req.body;
-  console.log("my email is :", email);
+  // console.log("my email is :", email);
 
   // validating if there is anything which is empty
 
-  // but throw this approch we have to check every feild using multiple if statements
+  // but through this approch we have to check every feild using multiple if statements
   // if (fullName === "") {
   //   throw new ApiError(400 , "full name is required");
   // }
@@ -28,7 +28,7 @@ const registerUser = asynHandler(async (req, res) => {
   }
 
   // Check if user already exist : username OR email
-  const existedUser = User.findOne({
+  const existedUser = await User.findOne({
     $or: [{ username }, { email }],
   });
 
@@ -39,7 +39,16 @@ const registerUser = asynHandler(async (req, res) => {
 
   // Now check weather user has given Avatar and coverImage ?
   const avatarLocalPath = req.files?.avatar[0]?.path;
-  const coverImageLocalPath = req.files?.coverImage[0]?.path;
+  // const coverImageLocalPath = req.files?.coverImage[0]?.path;
+
+  let coverImageLocalPath;
+  if (
+    req.files &&
+    Array.isArray(req.files.coverImage) &&
+    req.files.coverImage.length > 0
+  ) {
+    coverImageLocalPath = req.files.coverImage[0].path;
+  }
 
   // if user has not uploaded Avatar file then
   if (!avatarLocalPath) {
@@ -50,8 +59,8 @@ const registerUser = asynHandler(async (req, res) => {
   const avatar = await uploadCloudinary(avatarLocalPath);
   const coverImage = await uploadCloudinary(coverImageLocalPath);
 
-  // check if avatar is uploaded on cloudinay
   if (!avatar) {
+    // check if avatar is uploaded on cloudinay
     throw new ApiError(400, "Avatar file is not uploaded on cloud");
   }
 
